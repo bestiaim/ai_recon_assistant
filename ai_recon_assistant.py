@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 # os permite interactuar con variables del sistema operativo.
 
@@ -17,25 +19,72 @@ from sklearn.metrics.pairwise import cosine_similarity
 # cosine_similarity permite comparar el resultado del escaneo con documentos de contexto.
 
 from openai import OpenAI
-# OpenAI permite consumir la API de ChatGPT desde Python.
+# OpenAI permite consumir APIs compatibles con el formato OpenAI.
+# También puede usarse con otros proveedores si entregan un endpoint compatible.
 
-### CARGA DE VARIABLES DE ENTORNO
-load_dotenv()   # Carga las variables definidas en el archivo .env.
 
-### LECTURA Y VALIDACIÓN DE API KEY
-api_key = os.getenv("OPENAI_API_KEY")  # Lee la variable OPENAI_API_KEY desde el entorno.
+# ============================================================
+# CARGA DE VARIABLES DE ENTORNO
+# ============================================================
 
-if api_key:
-    print("[+] API Key cargada correctamente")  #si existe la API KEY
+load_dotenv()
+# Carga las variables definidas en el archivo .env.
+
+# LLM_API_KEY   = clave API del proveedor
+# LLM_BASE_URL  = URL base del proveedor compatible
+# LLM_MODEL     = modelo que se utilizará
+#
+# Ejemplo para OpenAI:
+# LLM_API_KEY=tu_api_key_de_openai
+# LLM_BASE_URL=https://api.openai.com/v1
+# LLM_MODEL=gpt-4o-mini
+#
+# Ejemplo para otro proveedor compatible:
+# LLM_API_KEY=tu_api_key_del_proveedor
+# LLM_BASE_URL=https://api.proveedor-ejemplo.com/v1
+# LLM_MODEL=nombre-del-modelo
+#
+
+llm_api_key = os.getenv("LLM_API_KEY")
+llm_base_url = os.getenv("LLM_BASE_URL", "https://api.openai.com/v1")
+llm_model = os.getenv("LLM_MODEL", "gpt-4o-mini")
+
+if llm_api_key:
+    print("[+] API Key del proveedor LLM cargada correctamente")
 else:
-    print("[-] No se encontró OPENAI_API_KEY")  # Si no existe API Key, detenemos el programa.
+    print("[-] No se encontró LLM_API_KEY")
+    print("Configura la variable en el archivo .env")
+    print("")
+    print("Ejemplo:")
+    print("LLM_API_KEY=tu_api_key_aqui")
+    print("LLM_BASE_URL=https://api.openai.com/v1")
+    print("LLM_MODEL=gpt-4o-mini")
     exit()
 
-client = OpenAI(api_key=api_key)  # Cliente usado para consumir la API de OpenAI.
+client = OpenAI(
+    api_key=llm_api_key,
+    base_url=llm_base_url
+)
 
-### EJECUCION DE NMAP
+print(f"[+] Proveedor LLM configurado: {llm_base_url}")
+print(f"[+] Modelo configurado: {llm_model}")
+
+
+# ============================================================
+# EJECUCIÓN DE NMAP
+# ============================================================
+
 def run_nmap_scan(target):
-   
+    """
+    Ejecuta Nmap contra el objetivo indicado.
+
+    Parámetros:
+        target: IP o dominio objetivo.
+
+    Retorna:
+        Salida estándar de Nmap o mensaje de error.
+    """
+
     print(f"\n[+] Iniciando escaneo Nmap contra {target}...")
 
     command = [
@@ -52,7 +101,7 @@ def run_nmap_scan(target):
             command,
             capture_output=True,
             text=True,
-            timeout=300   ### PODEMOS MODIFICAR EL TIEMPO EN SEGUNDOS
+            timeout=300
         )
 
         return result.stdout if result.stdout else result.stderr
@@ -60,10 +109,14 @@ def run_nmap_scan(target):
     except Exception as e:
         return f"Error ejecutando Nmap: {e}"
 
-#### EJECUCION DE PING A LA MAQUINA
+
+# ============================================================
+# EJECUCIÓN DE PING
+# ============================================================
+
 def run_ping(target):
     """
-    Ejecuta ping para validar conectividad básica.
+    Ejecuta ping para validar conectividad básica con el objetivo.
     """
 
     print(f"\n[+] Ejecutando Ping contra {target}...")
@@ -83,7 +136,11 @@ def run_ping(target):
     except Exception as e:
         return f"Error ejecutando Ping: {e}"
 
-### EJECUTA TRACEROUTE
+
+# ============================================================
+# EJECUCIÓN DE TRACEROUTE
+# ============================================================
+
 def run_traceroute(target):
     """
     Ejecuta traceroute para identificar la ruta de red hacia el objetivo.
@@ -106,10 +163,17 @@ def run_traceroute(target):
     except Exception as e:
         return f"Error ejecutando Traceroute: {e}"
 
-##### DE DETECTAR UN URL PUEDE EJECUTAR CURL PARA EXTRAER LA CABECERA
+
+# ============================================================
+# EJECUCIÓN DE CURL
+# ============================================================
+
 def run_curl(target):
     """
-    Ejecuta curl para obtener cabeceras HTTP.
+    Ejecuta curl para obtener cabeceras HTTP del objetivo.
+
+    Por defecto consulta:
+        http://<target>
     """
 
     print(f"\n[+] Ejecutando Curl contra {target}...")
@@ -136,8 +200,18 @@ def run_curl(target):
     except Exception as e:
         return f"Error ejecutando Curl: {e}"
 
-### Procesa los resultados usando Scikit-Learn, Extrae palabras clave relevantes.
+
+# ============================================================
+# PROCESAMIENTO CON SCIKIT-LEARN
+# ============================================================
+
 def extract_keywords(text_data):
+    """
+    Procesa los resultados usando Scikit-Learn.
+
+    Usa CountVectorizer para extraer palabras clave relevantes desde
+    la evidencia técnica recolectada.
+    """
 
     print("\n[+] Procesando información con Scikit-Learn...")
 
@@ -155,11 +229,23 @@ def extract_keywords(text_data):
     except Exception as e:
         return [f"Error procesando información: {e}"]
 
-#### CARGA LOS ARCHIVOS DEL RAG QUE CREAMOS
+
+# ============================================================
+# CARGA DE BASE DE CONOCIMIENTO RAG
+# ============================================================
+
 def load_knowledge_base(path="knowledge_base"):
     """
     Carga archivos .txt desde la carpeta knowledge_base.
-    Esta carpeta funciona como base de conocimiento para RAG.
+
+    Esta carpeta funciona como base de conocimiento local para RAG.
+
+    Estructura sugerida:
+        knowledge_base/
+        ├── services.txt
+        ├── contexto_recon.txt
+        ├── vulnerabilidades.txt
+        └── mitre.txt
     """
 
     documents = []
@@ -178,11 +264,21 @@ def load_knowledge_base(path="knowledge_base"):
 
     return documents, filenames
 
-### COMPARACION DE RESULTADOS
+
+# ============================================================
+# RECUPERACIÓN DE CONTEXTO RAG
+# ============================================================
+
 def retrieve_context(query_text, documents, filenames, top_k=2):
     """
     Implementa un RAG simple.
-    Compara los resultados del escaneo con la base local.
+
+    Compara los resultados del reconocimiento con los documentos
+    locales de la base de conocimiento usando CountVectorizer y
+    cosine similarity.
+
+    Retorna:
+        Fragmentos de contexto más relevantes.
     """
 
     if not documents:
@@ -218,11 +314,20 @@ def retrieve_context(query_text, documents, filenames, top_k=2):
 
     return context
 
-#### ENVIA LA INOFRMACION AL LLM
+
+# ============================================================
+# ANÁLISIS CON LLM
+# ============================================================
+
 def analyze_with_llm(target, combined_results, keywords, rag_context):
     """
-    Envía la información recolectada al LLM.
-    Genera análisis de servicios, riesgos, MITRE ATT&CK y recomendaciones.
+    Envía la información recolectada al LLM configurado en .env.
+
+    El análisis incluye:
+        1. Servicios detectados.
+        2. Posibles riesgos.
+        3. Técnicas MITRE ATT&CK relacionadas.
+        4. Recomendaciones iniciales de evaluación.
     """
 
     print("\n[+] Consultando modelo LLM...")
@@ -255,11 +360,13 @@ Instrucciones:
 - No inventes vulnerabilidades.
 - Si falta información, indícalo claramente.
 - Mantén el análisis dentro del contexto de laboratorio autorizado.
+- No entregues instrucciones de explotación.
+- Enfoca las recomendaciones en evaluación, validación y mitigación defensiva.
 """
 
     try:
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model=llm_model,
             temperature=0.2,
             messages=[
                 {
@@ -274,34 +381,39 @@ Instrucciones:
     except Exception as e:
         return f"Error consultando el LLM: {e}"
 
-### GENERAR REPORTE .MD
+
+# ============================================================
+# GENERACIÓN DE REPORTE MARKDOWN
+# ============================================================
+
 def generate_markdown_report(target, combined_results, keywords, rag_context, ai_analysis):
     """
     Genera automáticamente un reporte Markdown sin sobrescribir anteriores.
+
     Formato:
-    report_01.md
-    report_02.md
-    report_03.md
+        report_01.md
+        report_02.md
+        report_03.md
     """
 
     print("\n[+] Generando reporte Markdown...")
 
     keyword_section = "\n".join([f"- {word}" for word in keywords])
 
-    # Buscar reportes existentes
     existing_reports = glob.glob("report_*.md")
-    # Ejemplo: ["report_01.md", "report_02.md"]
 
     report_number = len(existing_reports) + 1
-    # Si hay 2 reportes, el siguiente será 3
 
     filename = f"report_{report_number:02d}.md"
-    # Formato 2 dígitos: 01, 02, 03...
 
     report_content = f"""# Reporte de Reconocimiento Asistido por IA
 
 ## Objetivo Evaluado
 {target}
+
+## Proveedor LLM Utilizado
+- Endpoint configurado: {llm_base_url}
+- Modelo utilizado: {llm_model}
 
 ## Palabras Clave Detectadas con Scikit-Learn
 {keyword_section}
@@ -334,10 +446,11 @@ def generate_markdown_report(target, combined_results, keywords, rag_context, ai
 - Cosine Similarity
 
 4. IA Generativa
-- OpenAI API
-- GPT-4o-mini
+- API compatible con formato OpenAI
+- Modelo configurable mediante .env
 
 5. Reporte automático
+- Generación incremental de archivos Markdown
 
 Reporte generado automáticamente por ai_recon_assistant.py
 """
@@ -348,30 +461,51 @@ Reporte generado automáticamente por ai_recon_assistant.py
     print(f"[+] Reporte generado correctamente: {filename}")
 
 
-# ---------------------------------------------------
+# ============================================================
 # PROGRAMA PRINCIPAL
-# ---------------------------------------------------
+# ============================================================
 
-target = input("\nIngrese IP objetivo: ")
+def main():
+    """
+    Flujo principal del programa:
 
-ping_result = run_ping(target)
-traceroute_result = run_traceroute(target)
-scan_result = run_nmap_scan(target)
-curl_result = run_curl(target)
+    1. Solicita una IP objetivo.
+    2. Ejecuta Ping.
+    3. Ejecuta Traceroute.
+    4. Ejecuta Nmap.
+    5. Ejecuta Curl.
+    6. Combina evidencia técnica.
+    7. Extrae palabras clave.
+    8. Carga base de conocimiento RAG.
+    9. Recupera contexto relevante.
+    10. Consulta al LLM.
+    11. Genera reporte Markdown.
+    """
 
-print("\n===== RESULTADO PING =====")
-print(ping_result)
+    target = input("\nIngrese IP objetivo: ").strip()
 
-print("\n===== RESULTADO TRACEROUTE =====")
-print(traceroute_result)
+    if not target:
+        print("[-] No se ingresó un objetivo válido.")
+        return
 
-print("\n===== RESULTADO NMAP =====")
-print(scan_result)
+    ping_result = run_ping(target)
+    traceroute_result = run_traceroute(target)
+    scan_result = run_nmap_scan(target)
+    curl_result = run_curl(target)
 
-print("\n===== RESULTADO CURL =====")
-print(curl_result)
+    print("\n===== RESULTADO PING =====")
+    print(ping_result)
 
-combined_results = f"""
+    print("\n===== RESULTADO TRACEROUTE =====")
+    print(traceroute_result)
+
+    print("\n===== RESULTADO NMAP =====")
+    print(scan_result)
+
+    print("\n===== RESULTADO CURL =====")
+    print(curl_result)
+
+    combined_results = f"""
 PING:
 {ping_result}
 
@@ -385,34 +519,38 @@ CURL:
 {curl_result}
 """
 
-keywords = extract_keywords(combined_results)
+    keywords = extract_keywords(combined_results)
 
-print("\n===== PALABRAS CLAVE DETECTADAS =====")
-for word in keywords:
-    print(f"- {word}")
+    print("\n===== PALABRAS CLAVE DETECTADAS =====")
+    for word in keywords:
+        print(f"- {word}")
 
-documents, filenames = load_knowledge_base()
+    documents, filenames = load_knowledge_base()
 
-rag_context = retrieve_context(
-    combined_results,
-    documents,
-    filenames
-)
+    rag_context = retrieve_context(
+        combined_results,
+        documents,
+        filenames
+    )
 
-ai_analysis = analyze_with_llm(
-    target,
-    combined_results,
-    keywords,
-    rag_context
-)
+    ai_analysis = analyze_with_llm(
+        target,
+        combined_results,
+        keywords,
+        rag_context
+    )
 
-print("\n===== ANÁLISIS GENERADO POR IA =====")
-print(ai_analysis)
+    print("\n===== ANÁLISIS GENERADO POR IA =====")
+    print(ai_analysis)
 
-generate_markdown_report(
-    target,
-    combined_results,
-    keywords,
-    rag_context,
-    ai_analysis
-)
+    generate_markdown_report(
+        target,
+        combined_results,
+        keywords,
+        rag_context,
+        ai_analysis
+    )
+
+
+if __name__ == "__main__":
+    main()
