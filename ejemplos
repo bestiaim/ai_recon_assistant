@@ -1,1 +1,240 @@
 
+# Reporte de Reconocimiento Asistido por IA
+
+## Objetivo Evaluado
+172.17.0.2
+
+## Palabras Clave Detectadas con Scikit-Learn
+- 17
+- 172
+- 40
+- 64
+- bytes
+- content
+- df
+- html
+- http
+- icon
+- js
+- link
+- main
+- meta
+- ms
+- nmap
+- os
+- script
+- sf
+- time
+- title
+- utf
+- x20content
+- x20href
+- x20rel
+
+
+## Análisis Generado por IA
+# Análisis de Reconocimiento para el Objetivo 172.17.0.2
+
+## 1. Servicios detectados
+
+Durante el reconocimiento se identificaron los siguientes servicios en el objetivo 172.17.0.2:
+
+- **Puerto 80/tcp**: 
+  - **Servicio**: HTTP
+  - **Versión**: Apache httpd 2.4.52 (Ubuntu)
+  - **Título de la página**: BigWear WordPress
+  - **Generador**: WordPress 6.9.4
+
+- **Puerto 3000/tcp**: 
+  - **Servicio**: Desconocido (posiblemente un servicio web)
+  - **Respuesta**: HTTP/1.1 200 OK
+
+- **Puerto 8000/tcp**: 
+  - **Servicio**: WSGIServer 0.2 (Python 3.10.12)
+  - **Título de la página**: Page not found at /
+
+## 2. Posibles riesgos
+
+- **HTTP expuesto (Puerto 80)**:
+  - **Riesgo**: La exposición de un servidor web puede presentar vulnerabilidades en la aplicación web, especialmente si se utiliza un CMS como WordPress, que puede ser susceptible a ataques comunes (inyección SQL, XSS, etc.).
+  - **Configuración insegura**: La presencia de un panel administrativo (wp-admin) puede ser un vector de ataque si no se implementan medidas de seguridad adecuadas.
+
+- **Servicio desconocido (Puerto 3000)**:
+  - **Riesgo**: La falta de información sobre el servicio en este puerto puede indicar una configuración insegura o un servicio no documentado que podría ser vulnerable.
+
+- **WSGIServer expuesto (Puerto 8000)**:
+  - **Riesgo**: La exposición de un servidor WSGI puede ser un vector de ataque si no se han implementado controles de seguridad adecuados. Además, la respuesta "Page not found" puede indicar que el servicio no está configurado correctamente.
+
+## 3. Técnicas MITRE ATT&CK relacionadas
+
+- **T1190 - Exploit Public-Facing Application**: Relacionado con la explotación de aplicaciones web expuestas, como el servidor HTTP.
+- **T1595 - Active Scanning**: Relacionado con el escaneo activo de servicios y aplicaciones, como se realizó con Nmap.
+- **T1046 - Network Service Discovery**: Relacionado con la identificación de servicios de red, como se evidenció en el escaneo de puertos.
+- **T1078 - Valid Accounts**: Si se permite el acceso administrativo sin controles adecuados, podría haber riesgo de uso de credenciales válidas.
+
+## 4. Recomendaciones iniciales de evaluación
+
+- **Para el servicio HTTP (Puerto 80)**:
+  - Revisar las cabeceras HTTP y la configuración del servidor Apache.
+  - Realizar una enumeración de directorios y archivos sensibles en el servidor WordPress.
+  - Verificar la existencia de plugins y temas desactualizados que puedan ser vulnerables.
+  - Implementar medidas de seguridad como autenticación de dos factores para el acceso administrativo.
+
+- **Para el servicio desconocido (Puerto 3000)**:
+  - Identificar el servicio que se está ejecutando en este puerto y evaluar su configuración.
+  - Realizar pruebas de seguridad para determinar si hay vulnerabilidades presentes.
+
+- **Para el WSGIServer (Puerto 8000)**:
+  - Revisar la configuración del servidor WSGI y asegurar que no se expongan rutas o recursos innecesarios.
+  - Implementar controles de acceso adecuados para proteger el servicio.
+
+- **General**:
+  - Realizar un análisis de vulnerabilidades en los servicios detectados para identificar posibles CVEs asociadas.
+  - Limitar el acceso a los servicios expuestos mediante firewalls o listas de control de acceso (ACLs) para mitigar riesgos. 
+
+Este análisis debe ser validado y complementado con pruebas adicionales en un entorno controlado para asegurar la integridad y seguridad del objetivo.
+
+## Evidencia Técnica Recolectada
+
+PING:
+PING 172.17.0.2 (172.17.0.2) 56(84) bytes of data.
+64 bytes from 172.17.0.2: icmp_seq=1 ttl=64 time=0.060 ms
+64 bytes from 172.17.0.2: icmp_seq=2 ttl=64 time=0.044 ms
+64 bytes from 172.17.0.2: icmp_seq=3 ttl=64 time=0.043 ms
+64 bytes from 172.17.0.2: icmp_seq=4 ttl=64 time=0.044 ms
+
+--- 172.17.0.2 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3077ms
+rtt min/avg/max/mdev = 0.043/0.047/0.060/0.007 ms
+
+
+TRACEROUTE:
+traceroute to 172.17.0.2 (172.17.0.2), 30 hops max, 60 byte packets
+ 1  172.17.0.2 (172.17.0.2)  0.034 ms  0.007 ms  0.008 ms
+
+
+NMAP:
+Starting Nmap 7.99 ( https://nmap.org ) at 2026-06-13 18:54 -0400
+Nmap scan report for 172.17.0.2
+Host is up (0.000030s latency).
+Not shown: 997 closed tcp ports (reset)
+PORT     STATE SERVICE VERSION
+80/tcp   open  http    Apache httpd 2.4.52 ((Ubuntu))
+|_http-title: BigWear WordPress
+| http-robots.txt: 1 disallowed entry 
+|_/wp-admin/
+|_http-server-header: Apache/2.4.52 (Ubuntu)
+|_http-generator: WordPress 6.9.4
+3000/tcp open  ppp?
+| fingerprint-strings: 
+|   GetRequest, HTTPOptions: 
+|     HTTP/1.1 200 OK
+|     Content-Length: 644
+|     Content-Disposition: inline; filename="index.html"
+|     Accept-Ranges: bytes
+|     ETag: "f28d0bf7364f5ff87825e15951852d784de5b81e"
+|     Content-Type: text/html; charset=utf-8
+|     Vary: Accept-Encoding
+|     Date: Sat, 13 Jun 2026 22:54:51 GMT
+|     Connection: close
+|     <!doctype html><html lang="en"><head><meta charset="utf-8"/><link rel="icon" href="/favicon.ico"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="theme-color" content="#000000"/><meta name="description" content="Web site created using create-react-app"/><link rel="apple-touch-icon" href="/logo192.png"/><link rel="manifest" href="/manifest.json"/><title>React App</title><script defer="defer" src="/static/js/main.49cf7e7a.js"></script><link href="/static/css/main.fdb74950.css" rel="stylesheet"></head><body><noscript>You need to enable JavaScript to run this app.</noscript><div id=
+|   Help, NCP: 
+|     HTTP/1.1 400 Bad Request
+|_    Connection: close
+8000/tcp open  http    WSGIServer 0.2 (Python 3.10.12)
+|_http-title: Page not found at /
+|_http-server-header: WSGIServer/0.2 CPython/3.10.12
+1 service unrecognized despite returning data. If you know the service/version, please submit the following fingerprint at https://nmap.org/cgi-bin/submit.cgi?new-service :
+SF-Port3000-TCP:V=7.99%I=7%D=6/13%Time=6A2DDFBB%P=x86_64-pc-linux-gnu%r(Ge
+SF:tRequest,39F,"HTTP/1\.1\x20200\x20OK\r\nContent-Length:\x20644\r\nConte
+SF:nt-Disposition:\x20inline;\x20filename=\"index\.html\"\r\nAccept-Ranges
+SF::\x20bytes\r\nETag:\x20\"f28d0bf7364f5ff87825e15951852d784de5b81e\"\r\n
+SF:Content-Type:\x20text/html;\x20charset=utf-8\r\nVary:\x20Accept-Encodin
+SF:g\r\nDate:\x20Sat,\x2013\x20Jun\x202026\x2022:54:51\x20GMT\r\nConnectio
+SF:n:\x20close\r\n\r\n<!doctype\x20html><html\x20lang=\"en\"><head><meta\x
+SF:20charset=\"utf-8\"/><link\x20rel=\"icon\"\x20href=\"/favicon\.ico\"/><
+SF:meta\x20name=\"viewport\"\x20content=\"width=device-width,initial-scale
+SF:=1\"/><meta\x20name=\"theme-color\"\x20content=\"#000000\"/><meta\x20na
+SF:me=\"description\"\x20content=\"Web\x20site\x20created\x20using\x20crea
+SF:te-react-app\"/><link\x20rel=\"apple-touch-icon\"\x20href=\"/logo192\.p
+SF:ng\"/><link\x20rel=\"manifest\"\x20href=\"/manifest\.json\"/><title>Rea
+SF:ct\x20App</title><script\x20defer=\"defer\"\x20src=\"/static/js/main\.4
+SF:9cf7e7a\.js\"></script><link\x20href=\"/static/css/main\.fdb74950\.css\
+SF:"\x20rel=\"stylesheet\"></head><body><noscript>You\x20need\x20to\x20ena
+SF:ble\x20JavaScript\x20to\x20run\x20this\x20app\.</noscript><div\x20id=")
+SF:%r(Help,2F,"HTTP/1\.1\x20400\x20Bad\x20Request\r\nConnection:\x20close\
+SF:r\n\r\n")%r(NCP,2F,"HTTP/1\.1\x20400\x20Bad\x20Request\r\nConnection:\x
+SF:20close\r\n\r\n")%r(HTTPOptions,39F,"HTTP/1\.1\x20200\x20OK\r\nContent-
+SF:Length:\x20644\r\nContent-Disposition:\x20inline;\x20filename=\"index\.
+SF:html\"\r\nAccept-Ranges:\x20bytes\r\nETag:\x20\"f28d0bf7364f5ff87825e15
+SF:951852d784de5b81e\"\r\nContent-Type:\x20text/html;\x20charset=utf-8\r\n
+SF:Vary:\x20Accept-Encoding\r\nDate:\x20Sat,\x2013\x20Jun\x202026\x2022:54
+SF::51\x20GMT\r\nConnection:\x20close\r\n\r\n<!doctype\x20html><html\x20la
+SF:ng=\"en\"><head><meta\x20charset=\"utf-8\"/><link\x20rel=\"icon\"\x20hr
+SF:ef=\"/favicon\.ico\"/><meta\x20name=\"viewport\"\x20content=\"width=dev
+SF:ice-width,initial-scale=1\"/><meta\x20name=\"theme-color\"\x20content=\
+SF:"#000000\"/><meta\x20name=\"description\"\x20content=\"Web\x20site\x20c
+SF:reated\x20using\x20create-react-app\"/><link\x20rel=\"apple-touch-icon\
+SF:"\x20href=\"/logo192\.png\"/><link\x20rel=\"manifest\"\x20href=\"/manif
+SF:est\.json\"/><title>React\x20App</title><script\x20defer=\"defer\"\x20s
+SF:rc=\"/static/js/main\.49cf7e7a\.js\"></script><link\x20href=\"/static/c
+SF:ss/main\.fdb74950\.css\"\x20rel=\"stylesheet\"></head><body><noscript>Y
+SF:ou\x20need\x20to\x20enable\x20JavaScript\x20to\x20run\x20this\x20app\.<
+SF:/noscript><div\x20id=");
+MAC Address: 96:56:63:52:D7:42 (Unknown)
+No exact OS matches for host (If you know what OS is running on it, see https://nmap.org/submit/ ).
+TCP/IP fingerprint:
+OS:SCAN(V=7.99%E=4%D=6/13%OT=80%CT=1%CU=40888%PV=Y%DS=1%DC=D%G=Y%M=965663%T
+OS:M=6A2DDFC7%P=x86_64-pc-linux-gnu)SEQ(SP=102%GCD=1%ISR=10B%TI=Z%CI=Z%II=I
+OS:%TS=22)SEQ(SP=104%GCD=1%ISR=108%TI=Z%CI=Z%II=I%TS=22)SEQ(SP=105%GCD=1%IS
+OS:R=10C%TI=Z%CI=Z%II=I%TS=21)SEQ(SP=106%GCD=1%ISR=10B%TI=Z%CI=Z%II=I%TS=21
+OS:)SEQ(SP=FA%GCD=1%ISR=10B%TI=Z%CI=Z%II=I%TS=21)OPS(O1=M5B4ST11NWA%O2=M5B4
+OS:ST11NWA%O3=M5B4NNT11NWA%O4=M5B4ST11NWA%O5=M5B4ST11NWA%O6=M5B4ST11)WIN(W1
+OS:=FE88%W2=FE88%W3=FE88%W4=FE88%W5=FE88%W6=FE88)ECN(R=Y%DF=Y%T=40%W=FAF0%O
+OS:=M5B4NNSNWA%CC=Y%Q=)T1(R=Y%DF=Y%T=40%S=O%A=S+%F=AS%RD=0%Q=)T2(R=N)T3(R=N
+OS:)T4(R=Y%DF=Y%T=40%W=0%S=A%A=Z%F=R%O=%RD=0%Q=)T5(R=Y%DF=Y%T=40%W=0%S=Z%A=
+OS:S+%F=AR%O=%RD=0%Q=)T6(R=Y%DF=Y%T=40%W=0%S=A%A=Z%F=R%O=%RD=0%Q=)T7(R=Y%DF
+OS:=Y%T=40%W=0%S=Z%A=S+%F=AR%O=%RD=0%Q=)U1(R=Y%DF=N%T=40%IPL=164%UN=0%RIPL=
+OS:G%RID=G%RIPCK=G%RUCK=G%RUD=G)IE(R=Y%DFI=N%T=40%CD=S)
+
+Network Distance: 1 hop
+
+OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 24.27 seconds
+
+
+CURL:
+HTTP/1.1 200 OK
+Date: Sat, 13 Jun 2026 22:55:03 GMT
+Server: Apache/2.4.52 (Ubuntu)
+Link: <http://172.17.0.2/wp-json/>; rel="https://api.w.org/"
+Content-Type: text/html; charset=UTF-8
+
+
+
+
+---
+
+## Arquitectura del Script
+
+1. Recolección de información
+- Ping
+- Traceroute
+- Nmap
+- Curl
+
+2. Procesamiento
+- Scikit-Learn
+- CountVectorizer
+
+3. RAG
+- Base de conocimiento local
+- Cosine Similarity
+
+4. IA Generativa
+- OpenAI API
+- GPT-4o-mini
+
+5. Reporte automático
+
+Reporte generado automáticamente por ai_recon_assistant.py
