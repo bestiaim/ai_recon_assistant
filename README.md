@@ -37,6 +37,22 @@ Análisis mediante OpenAI API
   ↓
 Generación de reporte Markdown
 ```
+instalar dependencias 
+pip install -r requirements.txt
+
+Crea un archivo llamado .env en la misma carpeta del script:
+
+OPENAI_API_KEY=tu_api_key_aqui o la que prefieras o utilices solo cambia este parametrto en el script.
+
+Ejecuta el script con:
+
+python ai_recon_assistant.py
+
+Luego ingresa la IP objetivo cuando el programa lo solicite:
+
+Ingrese IP objetivo: 10.10.1.129
+
+descarga knowledge_base con los ejemplos de un rag basico para este script.
 
 ### imagenes de referencia
 
