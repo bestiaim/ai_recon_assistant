@@ -1,0 +1,153 @@
+# Investigación profunda sobre la extracción completa de TTP de MITRE ATT&CK
+
+## Resumen ejecutivo
+
+He generado el artefacto solicitado en formato de texto plano y lo dejo listo para descarga aquí: [mitre_attack_ttp_v19.1_2026-06-13.txt](sandbox:/mnt/data/mitre_attack_ttp_v19.1_2026-06-13.txt). El archivo se construyó a partir de fuentes oficiales de MITRE ATT&CK, priorizando el portal oficial de datos y herramientas, la historia de versiones, la guía oficial de TAXII 2.1 y los repositorios oficiales de datos STIX 2.1 y STIX 2.0. MITRE identifica a **ATT&CK v19.1** como la versión vigente del catálogo y publica la distribución oficial del conocimiento en STIX, TAXII y exportaciones Excel derivadas del mismo dataset. citeturn1view1turn1view0turn1view3turn15view0turn0search3
+
+Sobre los exportes oficiales **v19.1** listados por MITRE, mi cómputo propio arroja **39 tácticas dominio-específicas**, **918 attack-patterns** en total, **378 técnicas de nivel superior**, **540 subtécnicas** y **18.653 ejemplos de procedimientos**. Por dominio, el archivo resultante contiene **Enterprise ATT&CK** con 15 tácticas, 697 técnicas y subtécnicas y 16.903 ejemplos de procedimientos; **Mobile ATT&CK** con 12 tácticas, 124 técnicas y subtécnicas y 1.478 ejemplos; e **ICS ATT&CK** con 12 tácticas, 97 técnicas y subtécnicas y 272 ejemplos. Estas cifras parten de los XLSX oficiales v19.1 de MITRE, que el propio proyecto describe como derivados del dataset STIX y que, además, excluyen objetos revocados o deprecados. citeturn3view0turn1view1turn1view3
+
+El artefacto está optimizado para **fidelidad y completitud**. Por esa razón, las etiquetas y la estructura del archivo están en español, pero el **texto libre autoritativo de MITRE** —descripciones de táctica, técnica, mitigación, detección y procedimientos— se conserva en inglés original cuando no existe una localización oficial en español en las fuentes utilizadas. Esto es coherente con el diseño de ATT&CK: MITRE indica que STIX es la representación más granular del conocimiento y que tanto el sitio web como otras vistas derivan de ese dataset. citeturn1view1turn1view0
+
+## Base de datos, versión y alcance
+
+MITRE distribuye ATT&CK oficialmente en **STIX 2.0**, **STIX 2.1**, **TAXII 2.1** y hojas de cálculo Excel. En su documentación, MITRE explica que STIX es la representación más granular del conocimiento ATT&CK y que otras presentaciones, incluido el sitio web y las hojas Excel, se construyen a partir de esos datos estructurados. El repositorio oficial `mitre-attack/attack-stix-data` organiza los dominios **Enterprise**, **Mobile** e **ICS** como colecciones STIX 2.1 versionadas, con un archivo “más reciente” por dominio y un índice de colecciones. citeturn1view1turn1view0
+
+Para el contexto temporal, MITRE marca **ATT&CK v19.1** como la versión actual del sitio desde el **28 de abril de 2026**. En las notas de actualización de abril de 2026, MITRE señala que uno de los cambios más relevantes fue la separación de la táctica **Defense Evasion** en **Stealth** y **Defense Impairment** dentro de Enterprise ATT&CK, junto con la incorporación de subtécnicas en **ICS ATT&CK**. Esa evolución explica por qué la distribución actual por táctica ya no coincide con ediciones anteriores de la matriz. citeturn1view3turn1view2
+
+Para esta entrega utilicé como base operativa los **XLSX oficiales v19.1** porque MITRE documenta que esas hojas son una vista oficial construida desde STIX y que las exportaciones individuales separan los tipos de relaciones —por ejemplo, **procedure examples**, **associated mitigations** y otras relaciones— en hojas específicas. Esa estructura permite construir un TXT legible, trazable y completo sin perder la referencia oficial de cada dominio. MITRE también aclara que, a diferencia del STIX “crudo”, esas hojas no incluyen objetos revocados o deprecados, lo que delimita exactamente el conjunto que aparece en el archivo descargable. citeturn3view0turn1view1
+
+```mermaid
+graph TD
+    D[Dominio ATT&CK] --> T[Táctica]
+    T --> K[Técnica o subtécnica]
+    K --> P[Procedure Examples]
+    K --> M[Mitigaciones]
+    K --> S[Estrategias de detección]
+    P --> G[Grupos]
+    P --> SW[Software o malware]
+    P --> C[Campañas]
+```
+
+La estructura anterior refleja fielmente cómo MITRE presenta ATT&CK en sus vistas derivadas de STIX: el catálogo parte del dominio, se organiza por táctica y técnica, y se enriquece con relaciones observadas en el mundo real, como ejemplos de uso, mitigaciones y estrategias de detección. citeturn1view1turn3view0
+
+## Estructura del artefacto entregado
+
+El TXT entregado está organizado como **dominio → táctica → técnica/subtécnica → detecciones → mitigaciones → procedimientos/ejemplos**. Para cada táctica, el archivo incluye **ID, nombre y descripción**; para cada técnica o subtécnica, incluye **ID, nombre, descripción, URL oficial, dominio, versión del objeto, tácticas ATT&CK asociadas, plataformas afectadas y señalización de si es subtécnica**. Para las mitigaciones, el archivo extrae tanto el **objeto de mitigación** como la **descripción específica del mapeo técnica→mitigación**. Para los procedimientos, cada ejemplo conserva el **source ID**, **source name**, **tipo de fuente** y la **descripción del uso observado**, además de resolver las referencias textuales de MITRE a URLs cuando aparecen en la hoja de citas del dominio. Todo ello se basa en las hojas individuales oficiales que MITRE publica para técnicas, mitigaciones y relaciones. citeturn3view0turn1view1
+
+Hay dos matices importantes sobre campos avanzados. Primero, en el flujo STIX/TAXII oficial, MITRE muestra que un objeto `attack-pattern` puede exponer propiedades como **`x_mitre_detection`**, visibles en la propia guía oficial de TAXII 2.1. Segundo, esos campos no aparecen siempre como columnas dedicadas en las exportaciones Excel v19.1 que utilicé para la extracción masiva. Por ello, en el TXT los apartados de **detección** se alimentan principalmente desde las hojas de **associated detection strategies** y, cuando un campo no está explícitamente presente en el export oficial usado, se marca como **“no especificado”**. citeturn15view0turn1view1
+
+La misma lógica aplica a **“permisos requeridos”**. MITRE sí contempla metadatos ricos en su modelo STIX/TAXII, pero el export oficial v19.1 empleado para esta entrega no expone ese campo como una columna dedicada en todas las vistas necesarias para la extracción completa. Por eso el TXT conserva la estructura del campo y lo marca sistemáticamente como **“no especificado”** cuando el valor no está disponible en la fuente usada. Esta decisión privilegia integridad y trazabilidad frente a “rellenar” valores de forma no autoritativa. citeturn15view0turn1view1
+
+## Comparativa por táctica
+
+La tabla siguiente resume, por dominio, el volumen de tácticas, técnicas totales, técnicas de nivel superior, subtécnicas y ejemplos de procedimiento del archivo generado. Los valores son **cómputo propio** a partir de los exportes oficiales v19.1 listados por MITRE. citeturn3view0turn1view3
+
+| Dominio           |   Tácticas |   Técnicas + subtécnicas |   Técnicas (nivel superior) |   Subtécnicas |   Ejemplos de procedimiento |
+|:------------------|-----------:|-------------------------:|----------------------------:|--------------:|----------------------------:|
+| Enterprise ATT&CK |         15 |                      697 |                         222 |           475 |                       16903 |
+| Mobile ATT&CK     |         12 |                      124 |                          77 |            47 |                        1478 |
+| ICS ATT&CK        |         12 |                       97 |                          79 |            18 |                         272 |
+
+A continuación, la **comparativa completa del número de técnicas por táctica**, contando tanto técnicas como subtécnicas cuando existen. De nuevo, los valores son resultado de la extracción y normalización hecha sobre los XLSX oficiales v19.1. citeturn3view0turn1view3
+
+| Dominio           | ID táctica   | Táctica                   | Táctica ES                            |   Técnicas + subtécnicas |   Solo técnicas |   Subtécnicas |
+|:------------------|:-------------|:--------------------------|:--------------------------------------|-------------------------:|----------------:|--------------:|
+| Enterprise ATT&CK | TA0005       | Stealth                   | Sigilo                                |                      148 |              30 |           118 |
+| Enterprise ATT&CK | TA0003       | Persistence               | Persistencia                          |                      113 |              22 |            91 |
+| Enterprise ATT&CK | TA0004       | Privilege Escalation      | Escalada de privilegios               |                       96 |              13 |            83 |
+| Enterprise ATT&CK | TA0006       | Credential Access         | Acceso a credenciales                 |                       67 |              17 |            50 |
+| Enterprise ATT&CK | TA0002       | Execution                 | Ejecución                             |                       64 |              20 |            44 |
+| Enterprise ATT&CK | TA0112       | Defense Impairment        | Deterioro de defensas                 |                       56 |              18 |            38 |
+| Enterprise ATT&CK | TA0042       | Resource Development      | Desarrollo de recursos                |                       50 |               9 |            41 |
+| Enterprise ATT&CK | TA0007       | Discovery                 | Descubrimiento                        |                       49 |              34 |            15 |
+| Enterprise ATT&CK | TA0043       | Reconnaissance            | Reconocimiento                        |                       46 |              12 |            34 |
+| Enterprise ATT&CK | TA0011       | Command and Control       | Comando y control                     |                       45 |              18 |            27 |
+| Enterprise ATT&CK | TA0009       | Collection                | Recolección                           |                       41 |              17 |            24 |
+| Enterprise ATT&CK | TA0040       | Impact                    | Impacto                               |                       33 |              15 |            18 |
+| Enterprise ATT&CK | TA0008       | Lateral Movement          | Movimiento lateral                    |                       23 |               9 |            14 |
+| Enterprise ATT&CK | TA0001       | Initial Access            | Acceso inicial                        |                       22 |              11 |            11 |
+| Enterprise ATT&CK | TA0010       | Exfiltration              | Exfiltración                          |                       19 |               9 |            10 |
+| ICS ATT&CK        | TA0107       | Inhibit Response Function | Inhibición de la función de respuesta |                       20 |              13 |             7 |
+| ICS ATT&CK        | TA0105       | Impact                    | Impacto                               |                       12 |              12 |             0 |
+| ICS ATT&CK        | TA0108       | Initial Access            | Acceso inicial                        |                       12 |              12 |             0 |
+| ICS ATT&CK        | TA0100       | Collection                | Recolección                           |                       11 |              11 |             0 |
+| ICS ATT&CK        | TA0109       | Lateral Movement          | Movimiento lateral                    |                       11 |               6 |             5 |
+| ICS ATT&CK        | TA0104       | Execution                 | Ejecución                             |                       10 |              10 |             0 |
+| ICS ATT&CK        | TA0110       | Persistence               | Persistencia                          |                       10 |               5 |             5 |
+| ICS ATT&CK        | TA0103       | Evasion                   | Evasión                               |                        9 |               7 |             2 |
+| ICS ATT&CK        | TA0102       | Discovery                 | Descubrimiento                        |                        8 |               5 |             3 |
+| ICS ATT&CK        | TA0106       | Impair Process Control    | Deterioro del control de proceso      |                        8 |               4 |             4 |
+| ICS ATT&CK        | TA0101       | Command and Control       | Comando y control                     |                        3 |               3 |             0 |
+| ICS ATT&CK        | TA0111       | Privilege Escalation      | Escalada de privilegios               |                        2 |               2 |             0 |
+| Mobile ATT&CK     | TA0030       | Defense Evasion           | Evasión de defensas                   |                       33 |              17 |            16 |
+| Mobile ATT&CK     | TA0035       | Collection                | Recolección                           |                       24 |              15 |             9 |
+| Mobile ATT&CK     | TA0037       | Command and Control       | Comando y control                     |                       17 |               9 |             8 |
+| Mobile ATT&CK     | TA0032       | Discovery                 | Descubrimiento                        |                       13 |               8 |             5 |
+| Mobile ATT&CK     | TA0027       | Initial Access            | Acceso inicial                        |                       11 |               8 |             3 |
+| Mobile ATT&CK     | TA0034       | Impact                    | Impacto                               |                       11 |              10 |             1 |
+| Mobile ATT&CK     | TA0028       | Persistence               | Persistencia                          |                       10 |               8 |             2 |
+| Mobile ATT&CK     | TA0031       | Credential Access         | Acceso a credenciales                 |                       10 |               6 |             4 |
+| Mobile ATT&CK     | TA0029       | Privilege Escalation      | Escalada de privilegios               |                        5 |               3 |             2 |
+| Mobile ATT&CK     | TA0041       | Execution                 | Ejecución                             |                        5 |               4 |             1 |
+| Mobile ATT&CK     | TA0036       | Exfiltration              | Exfiltración                          |                        3 |               2 |             1 |
+| Mobile ATT&CK     | TA0033       | Lateral Movement          | Movimiento lateral                    |                        2 |               2 |             0 |
+
+## Observaciones analíticas
+
+La primera conclusión es de **concentración por dominio**. Enterprise ATT&CK absorbe con mucha diferencia la mayor parte del conocimiento operacional del artefacto: aproximadamente tres cuartas partes de todos los attack-patterns y más del 90 % de todos los ejemplos de procedimiento extraídos. Esto no contradice la arquitectura del sistema; más bien refleja el mayor grado de madurez histórica y amplitud de cobertura del dominio Enterprise frente a Mobile e ICS dentro de ATT&CK. El dato cuantitativo es cómputo propio sobre los exportes oficiales, y el encuadre por dominios coincide con cómo MITRE organiza sus colecciones oficiales. citeturn15view0turn1view0turn3view0
+
+La segunda conclusión es de **redistribución conceptual en Enterprise**. En v19, MITRE dividió la antigua lógica de Defense Evasion entre **Stealth** y **Defense Impairment**. En la extracción actual, **Stealth** aparece como la táctica más densa de Enterprise con **148** técnicas y subtécnicas, seguida por **Persistence** con **113** y **Privilege Escalation** con **96**. Esa foto cuantitativa está directamente influida por el cambio estructural anunciado por MITRE en abril de 2026. citeturn1view2turn3view0
+
+La tercera conclusión es que la **subtécnica ya no es exclusiva de Enterprise** en la práctica del artefacto entregado. El recuento de IDs ATT&CK decimales en los exportes oficiales muestra **47 subtécnicas en Mobile** y **18 en ICS**, algo que encaja especialmente bien con la nota oficial de MITRE sobre la introducción de subtécnicas en ICS dentro de v19. En otras palabras, para un informe comparativo moderno ya no basta con tratar Mobile e ICS como matrices “planas”. citeturn1view2turn3view0
+
+La cuarta conclusión es metodológica. El TXT que acompaña esta respuesta es especialmente sólido para una visión **táctica→técnica→procedimiento→mitigación**, porque las hojas oficiales separan bien las relaciones de procedimiento y mitigación. Sin embargo, cuando se necesitan campos STIX más granulares —como propiedades específicas del objeto `attack-pattern`, por ejemplo `x_mitre_detection` en la guía oficial de TAXII— la **fuente más autoritativa sigue siendo STIX/TAXII**, no la vista Excel. Por eso el artefacto marca algunos campos como **“no especificado”** en lugar de rellenarlos con inferencias no verificadas. citeturn15view0turn1view1
+
+## Fuentes prioritarias y reproducción
+
+Las fuentes prioritarias que dan soporte a esta entrega son las siguientes. Las cito como enlaces oficiales de referencia porque el usuario pidió priorización de fuentes y enlaces. Todas son páginas o repositorios mantenidos por MITRE ATT&CK. citeturn1view1turn1view0turn1view3turn1view2turn15view0turn0search3
+
+- **ATT&CK Data & Tools** — portal oficial para acceder a STIX 2.1, STIX 2.0, TAXII 2.1 y exportaciones Excel oficiales. citeturn1view1turn3view0
+- **`mitre-attack/attack-stix-data`** — repositorio oficial del dataset ATT&CK en STIX 2.1, con estructura por dominios y colecciones versionadas. citeturn1view0
+- **`mitre/cti`** — repositorio oficial del dataset ATT&CK en STIX 2.0. citeturn0search3
+- **Version History** — fuente oficial para verificar que la versión actual del sitio es v19.1. citeturn1view3
+- **Updates April 2026** — notas oficiales del release v19 con cambios relevantes, como la división de Defense Evasion y la llegada de subtécnicas a ICS. citeturn1view2
+- **TAXII 2.1 API User Guide** — documentación oficial del servidor TAXII, su base URL, colecciones y ejemplos de consulta. citeturn15view0
+
+MITRE documenta que la base del servidor TAXII 2.1 oficial es `https://attack-taxii.mitre.org/api/v21/` y publica explícitamente las colecciones actuales para **Enterprise**, **ICS** y **Mobile**. También muestra ejemplos de descubrimiento, consulta de colecciones y obtención de objetos concretos, lo que hace reproducible el proceso por API además de por ficheros. citeturn15view0
+
+```bash
+# Descubrimiento del servidor TAXII 2.1
+curl --request GET \
+  --url https://attack-taxii.mitre.org/taxii2/ \
+  --header 'Accept: application/taxii+json;version=2.1'
+
+# Colecciones disponibles
+curl --request GET \
+  --url https://attack-taxii.mitre.org/api/v21/collections \
+  --header 'Accept: application/taxii+json;version=2.1'
+
+# Attack-patterns de Enterprise ATT&CK
+curl --request GET \
+  --url 'https://attack-taxii.mitre.org/api/v21/collections/x-mitre-collection--1f5f1533-f617-4ca8-9ab4-6a02367fa019/objects?match[type]=attack-pattern' \
+  --header 'Accept: application/taxii+json;version=2.1'
+
+# Un objeto ATT&CK concreto por STIX ID
+curl --request GET \
+  --url 'https://attack-taxii.mitre.org/api/v21/collections/x-mitre-collection--1f5f1533-f617-4ca8-9ab4-6a02367fa019/objects/attack-pattern--ad255bfe-a9e6-4b52-a258-8d3462abe842' \
+  --header 'Accept: application/taxii+json;version=2.1'
+
+# Exportes Excel oficiales v19.1 usados en esta entrega
+curl -O https://attack.mitre.org/docs/attack-excel-files/v19.1/enterprise-attack/enterprise-attack-v19.1-techniques.xlsx
+curl -O https://attack.mitre.org/docs/attack-excel-files/v19.1/enterprise-attack/enterprise-attack-v19.1-tactics.xlsx
+curl -O https://attack.mitre.org/docs/attack-excel-files/v19.1/enterprise-attack/enterprise-attack-v19.1-mitigations.xlsx
+
+curl -O https://attack.mitre.org/docs/attack-excel-files/v19.1/mobile-attack/mobile-attack-v19.1-techniques.xlsx
+curl -O https://attack.mitre.org/docs/attack-excel-files/v19.1/mobile-attack/mobile-attack-v19.1-tactics.xlsx
+curl -O https://attack.mitre.org/docs/attack-excel-files/v19.1/mobile-attack/mobile-attack-v19.1-mitigations.xlsx
+
+curl -O https://attack.mitre.org/docs/attack-excel-files/v19.1/ics-attack/ics-attack-v19.1-techniques.xlsx
+curl -O https://attack.mitre.org/docs/attack-excel-files/v19.1/ics-attack/ics-attack-v19.1-tactics.xlsx
+curl -O https://attack.mitre.org/docs/attack-excel-files/v19.1/ics-attack/ics-attack-v19.1-mitigations.xlsx
+```
+
+El resultado práctico de esa metodología reproducible es el archivo adjunto, ya preparado para descarga, con un tamaño aproximado de 19 MB y con cobertura integral de tácticas, técnicas, subtécnicas, mitigaciones y procedimientos/ejemplos referenciados por MITRE: [mitre_attack_ttp_v19.1_2026-06-13.txt](sandbox:/mnt/data/mitre_attack_ttp_v19.1_2026-06-13.txt).

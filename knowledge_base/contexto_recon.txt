@@ -1,0 +1,521 @@
+CONTEXT RECON KNOWLEDGE BASE - AI RECON ASSISTANT
+
+====================================================
+OBJETIVO DEL RECONOCIMIENTO
+====================================================
+
+El reconocimiento es la fase inicial de una evaluación de seguridad ofensiva.
+Su objetivo es recopilar información técnica sobre un objetivo autorizado para
+identificar superficie de ataque, servicios expuestos, versiones de software,
+posibles configuraciones inseguras y vectores iniciales de evaluación.
+
+En un laboratorio controlado, el reconocimiento permite al analista humano
+priorizar servicios, decidir siguientes pasos y documentar hallazgos iniciales.
+
+El reconocimiento NO equivale a explotación. Su función principal es observar,
+enumerar, clasificar y preparar información para análisis posterior.
+
+
+====================================================
+FLUJO GENERAL DE RECONOCIMIENTO
+====================================================
+
+1. Validar conectividad:
+   - ping
+   - traceroute
+
+2. Enumerar puertos y servicios:
+   - nmap -sV
+   - nmap -sC
+   - nmap -O
+
+3. Identificar tecnologías web:
+   - curl
+   - whatweb
+   - wappalyzer
+   - headers HTTP
+
+4. Procesar información:
+   - extraer servicios
+   - detectar versiones
+   - identificar palabras clave
+   - clasificar superficie de ataque
+
+5. Enriquecer análisis:
+   - RAG
+   - MITRE ATT&CK
+   - CVEs conocidas
+   - buenas prácticas
+
+6. Generar reporte:
+   - servicios detectados
+   - riesgos preliminares
+   - técnicas MITRE relacionadas
+   - recomendaciones iniciales
+
+
+====================================================
+NMAP EN RECONOCIMIENTO
+====================================================
+
+Nmap permite descubrir hosts, puertos abiertos, servicios, versiones y, en algunos
+casos, sistema operativo.
+
+Flags usados en este proyecto:
+
+-sV:
+Detecta servicios y versiones.
+Es obligatorio en la evaluación porque permite saber qué software está expuesto.
+
+-sC:
+Ejecuta scripts NSE por defecto.
+Puede entregar información adicional sobre servicios, certificados, banners,
+métodos HTTP, SMB, FTP, SSH y otros.
+
+-O:
+Intenta detectar el sistema operativo.
+Ayuda a diferenciar objetivos Linux, Windows, dispositivos de red u otros.
+
+-T4:
+Aumenta la velocidad del escaneo.
+Es aceptable en laboratorio, pero en entornos reales debe usarse con cuidado.
+
+Interpretación:
+- Un puerto abierto indica superficie de ataque.
+- Una versión antigua puede indicar riesgo.
+- Un banner puede revelar tecnología.
+- Un servicio innecesario expuesto aumenta el riesgo.
+
+
+====================================================
+PING
+====================================================
+
+Ping permite validar si el objetivo responde a ICMP.
+
+Uso:
+- Confirmar conectividad.
+- Medir latencia.
+- Detectar pérdida de paquetes.
+
+Limitación:
+Si un host no responde a ping, no significa necesariamente que esté apagado.
+Muchos firewalls bloquean ICMP.
+
+Interpretación:
+- Respuesta exitosa: host probablemente activo.
+- Sin respuesta: puede estar apagado, filtrado o bloqueando ICMP.
+
+
+====================================================
+TRACEROUTE
+====================================================
+
+Traceroute muestra la ruta de red hacia el objetivo.
+
+Uso:
+- Observar saltos intermedios.
+- Identificar segmentación o rutas.
+- Detectar firewalls o gateways intermedios.
+
+Limitación:
+Algunos saltos pueden no responder por filtrado ICMP/UDP.
+
+Interpretación:
+- Muchos saltos pueden indicar ruta externa.
+- Un salto único suele indicar red local o laboratorio.
+- Saltos con asteriscos pueden indicar filtrado.
+
+
+====================================================
+CURL
+====================================================
+
+Curl permite consultar servicios HTTP/HTTPS desde consola.
+
+Uso en reconocimiento:
+- Obtener headers HTTP.
+- Detectar servidor web.
+- Ver redirecciones.
+- Identificar tecnologías por cabeceras.
+
+Cabeceras relevantes:
+Server:
+Puede revelar Apache, Nginx, Microsoft-IIS u otro servidor.
+
+X-Powered-By:
+Puede revelar PHP, Express, ASP.NET u otra tecnología.
+
+Location:
+Indica redirecciones.
+
+Set-Cookie:
+Puede indicar frameworks, sesiones o tecnologías.
+
+Riesgos:
+- Headers excesivamente informativos.
+- Versiones visibles.
+- Redirecciones inseguras.
+- Cookies sin atributos Secure o HttpOnly.
+
+
+====================================================
+SUPERFICIE DE ATAQUE
+====================================================
+
+La superficie de ataque corresponde al conjunto de servicios, aplicaciones,
+protocolos y puntos de entrada que podrían ser evaluados por un atacante.
+
+Factores que aumentan superficie de ataque:
+- Muchos puertos abiertos.
+- Servicios administrativos expuestos.
+- Versiones antiguas.
+- Servicios sin cifrado.
+- Paneles web públicos.
+- Bases de datos accesibles.
+- Servicios innecesarios.
+
+Ejemplos:
+- SSH expuesto: posible riesgo de fuerza bruta.
+- HTTP expuesto: posible riesgo de vulnerabilidades web.
+- SMB expuesto: posible riesgo de movimiento lateral.
+- RDP expuesto: posible riesgo de acceso remoto no autorizado.
+- Bases de datos expuestas: posible fuga de información.
+
+
+====================================================
+INTERPRETACIÓN DE SERVICIOS COMUNES
+====================================================
+
+SSH - Puerto 22:
+Servicio de administración remota segura.
+Riesgos:
+- Fuerza bruta.
+- Credenciales débiles.
+- Acceso remoto no autorizado.
+- Root login habilitado.
+MITRE:
+- T1110 Brute Force.
+- T1021 Remote Services.
+Recomendaciones:
+- Usar claves SSH.
+- Deshabilitar root login.
+- Aplicar MFA cuando sea posible.
+- Limitar acceso por IP.
+
+FTP - Puerto 21:
+Servicio de transferencia de archivos.
+Riesgos:
+- Credenciales en texto plano.
+- Anonymous login.
+- Exposición de archivos.
+MITRE:
+- T1048 Exfiltration Over Alternative Protocol.
+- T1110 Brute Force.
+Recomendaciones:
+- Usar SFTP o FTPS.
+- Deshabilitar anonymous login.
+- Revisar permisos.
+
+TELNET - Puerto 23:
+Servicio remoto sin cifrado.
+Riesgos:
+- Credenciales visibles en red.
+- Acceso no seguro.
+MITRE:
+- T1021 Remote Services.
+Recomendaciones:
+- Reemplazar por SSH.
+- Bloquear exposición externa.
+
+HTTP - Puerto 80:
+Servicio web sin cifrado.
+Riesgos:
+- Aplicaciones vulnerables.
+- Directorios expuestos.
+- Paneles administrativos.
+- Falta de cifrado.
+MITRE:
+- T1190 Exploit Public-Facing Application.
+- T1595 Active Scanning.
+Recomendaciones:
+- Enumerar directorios.
+- Revisar headers.
+- Buscar tecnologías y versiones.
+- Migrar a HTTPS.
+
+HTTPS - Puerto 443:
+Servicio web cifrado.
+Riesgos:
+- Aplicación vulnerable aunque exista TLS.
+- Certificados débiles.
+- Configuración TLS insegura.
+MITRE:
+- T1190 Exploit Public-Facing Application.
+Recomendaciones:
+- Revisar certificado.
+- Revisar configuración TLS.
+- Analizar aplicación web.
+
+SMB - Puerto 445:
+Servicio de compartición de archivos Windows.
+Riesgos:
+- Enumeración de recursos compartidos.
+- Movimiento lateral.
+- Vulnerabilidades históricas como EternalBlue.
+MITRE:
+- T1021 Remote Services.
+- T1210 Exploitation of Remote Services.
+Recomendaciones:
+- Deshabilitar SMBv1.
+- Restringir acceso.
+- Revisar shares.
+- Activar SMB signing.
+
+RDP - Puerto 3389:
+Acceso remoto gráfico a Windows.
+Riesgos:
+- Fuerza bruta.
+- Credenciales filtradas.
+- Exposición externa.
+MITRE:
+- T1110 Brute Force.
+- T1021 Remote Services.
+Recomendaciones:
+- No exponer directamente a Internet.
+- Usar VPN.
+- Activar MFA.
+- Limitar intentos de login.
+
+DNS - Puerto 53:
+Resolución de nombres.
+Riesgos:
+- Zone transfer.
+- Fuga de información.
+- Enumeración de subdominios.
+MITRE:
+- T1590 Gather Victim Network Information.
+Recomendaciones:
+- Bloquear transferencias de zona no autorizadas.
+- Revisar registros expuestos.
+
+MYSQL - Puerto 3306:
+Base de datos MySQL.
+Riesgos:
+- Credenciales débiles.
+- Exposición de datos.
+- Acceso remoto innecesario.
+MITRE:
+- T1078 Valid Accounts.
+Recomendaciones:
+- Restringir acceso por IP.
+- Usar credenciales robustas.
+- No exponer públicamente.
+
+POSTGRESQL - Puerto 5432:
+Base de datos PostgreSQL.
+Riesgos:
+- Acceso remoto no autorizado.
+- Configuración insegura.
+Recomendaciones:
+- Revisar pg_hba.conf.
+- Restringir acceso.
+- Usar autenticación fuerte.
+
+
+====================================================
+MITRE ATT&CK ÚTIL PARA RECONOCIMIENTO
+====================================================
+
+T1595 - Active Scanning:
+Escaneo activo de servicios, hosts o aplicaciones.
+Relacionado con Nmap, curl, WhatWeb y herramientas de enumeración.
+
+T1046 - Network Service Discovery:
+Descubrimiento de servicios de red.
+Relacionado con identificación de puertos abiertos y servicios.
+
+T1592 - Gather Victim Host Information:
+Recolección de información del host.
+Relacionado con sistema operativo, hostname, versiones y banners.
+
+T1590 - Gather Victim Network Information:
+Recolección de información de red.
+Relacionado con DNS, rutas, rangos IP y dominios.
+
+T1190 - Exploit Public-Facing Application:
+Explotación de aplicaciones expuestas.
+Relacionado con servicios web vulnerables.
+
+T1110 - Brute Force:
+Intentos repetidos para descubrir credenciales.
+Relacionado con SSH, FTP, RDP, paneles web y bases de datos.
+
+T1021 - Remote Services:
+Uso de servicios remotos para acceso o movimiento lateral.
+Relacionado con SSH, RDP, SMB y WinRM.
+
+T1210 - Exploitation of Remote Services:
+Explotación de servicios remotos vulnerables.
+Relacionado con SMB, RDP, servicios legacy y versiones vulnerables.
+
+T1078 - Valid Accounts:
+Uso de credenciales válidas.
+Relacionado con credenciales débiles, filtradas o por defecto.
+
+T1048 - Exfiltration Over Alternative Protocol:
+Exfiltración mediante protocolos alternativos.
+Relacionado con FTP, HTTP, DNS u otros canales.
+
+
+====================================================
+REGLAS DE ANÁLISIS PARA EL LLM
+====================================================
+
+El modelo debe analizar los hallazgos de forma prudente.
+
+Reglas:
+- No asumir explotación si solo hay reconocimiento.
+- No inventar CVEs si no hay versión suficiente.
+- Si existe versión, sugerir buscar CVEs.
+- Si hay servicio administrativo expuesto, marcar riesgo.
+- Si hay HTTP/HTTPS, recomendar enumeración web.
+- Si hay SSH/RDP/FTP, recomendar revisar credenciales y políticas.
+- Si hay SMB, recomendar enumeración controlada de shares.
+- Si no hay información suficiente, indicarlo claramente.
+
+Ejemplos:
+- “Se detecta SSH expuesto; podría representar riesgo de fuerza bruta si existen credenciales débiles.”
+- “Se detecta HTTP; se recomienda enumerar tecnologías y directorios.”
+- “No se puede confirmar vulnerabilidad específica sin validar versión y configuración.”
+
+
+====================================================
+RECOMENDACIONES INICIALES DE EVALUACIÓN
+====================================================
+
+Para servicios web:
+- Revisar cabeceras HTTP.
+- Identificar servidor web.
+- Detectar CMS o framework.
+- Enumerar directorios.
+- Revisar formularios.
+- Buscar CVEs asociadas a versiones.
+- Validar métodos HTTP permitidos.
+
+Para SSH:
+- Revisar versión.
+- Validar si permite login por contraseña.
+- Revisar acceso root.
+- Aplicar fuerza bruta solo si el alcance lo autoriza.
+
+Para FTP:
+- Probar anonymous login.
+- Revisar permisos de lectura/escritura.
+- Evitar uso de FTP sin cifrado.
+
+Para SMB:
+- Enumerar shares.
+- Revisar SMB signing.
+- Validar versión SMB.
+- Revisar exposición innecesaria.
+
+Para RDP:
+- Validar exposición.
+- Revisar bloqueo por intentos.
+- Revisar MFA o VPN.
+
+Para bases de datos:
+- Confirmar si el acceso remoto es necesario.
+- Revisar credenciales por defecto.
+- Limitar acceso por firewall.
+
+
+====================================================
+CRITERIOS DE RIESGO PRELIMINAR
+====================================================
+
+CRÍTICO:
+- Servicio vulnerable conocido con exploit público.
+- RDP expuesto sin controles.
+- SMB vulnerable o SMBv1.
+- Base de datos expuesta públicamente con autenticación débil.
+
+ALTO:
+- Panel administrativo expuesto.
+- SSH expuesto con password login.
+- FTP con anonymous login.
+- Web server con versión vulnerable.
+
+MEDIO:
+- Headers informativos.
+- Servicios innecesarios.
+- DNS con información excesiva.
+- TLS débil.
+
+BAJO:
+- Servicios esperados y actualizados.
+- Puertos internos con controles adecuados.
+- Información limitada sin evidencia de riesgo directo.
+
+
+====================================================
+BUENAS PRÁCTICAS DE REPORTE
+====================================================
+
+Un reporte de reconocimiento debe incluir:
+- Objetivo evaluado.
+- Fecha de ejecución.
+- Herramientas utilizadas.
+- Comandos ejecutados.
+- Servicios detectados.
+- Versiones encontradas.
+- Riesgos preliminares.
+- Técnicas MITRE relacionadas.
+- Recomendaciones.
+- Limitaciones del análisis.
+
+El reporte debe diferenciar:
+- Evidencia observada.
+- Hipótesis.
+- Riesgo potencial.
+- Recomendación.
+
+Ejemplo:
+Evidencia:
+Puerto 22/tcp abierto con OpenSSH.
+
+Hipótesis:
+Puede existir riesgo de acceso remoto no autorizado si hay credenciales débiles.
+
+Recomendación:
+Validar configuración SSH, deshabilitar root login y revisar autenticación.
+
+
+====================================================
+LIMITACIONES DEL RECONOCIMIENTO AUTOMATIZADO
+====================================================
+
+El reconocimiento automatizado puede generar falsos positivos.
+Nmap puede identificar versiones de forma aproximada.
+Curl solo entrega información web básica.
+Ping puede fallar por filtrado.
+Traceroute puede no mostrar todos los saltos.
+El LLM puede equivocarse si los datos son incompletos.
+
+Por eso, todo hallazgo debe ser validado por un analista humano.
+La IA debe apoyar el análisis, no reemplazar el criterio profesional.
+
+
+====================================================
+ENFOQUE ÉTICO Y DE LABORATORIO
+====================================================
+
+Este conocimiento debe usarse solo en:
+- Laboratorios controlados.
+- Máquinas vulnerables autorizadas.
+- Evaluaciones internas con permiso.
+- Ambientes académicos.
+
+No se debe usar para atacar sistemas sin autorización.
+El objetivo es apoyar la formación en ciberseguridad ofensiva responsable.
