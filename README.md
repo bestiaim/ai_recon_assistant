@@ -94,14 +94,18 @@ sudo apt install nmap traceroute curl
 
 ## Configuración de variable de entorno
 
-El script requiere una clave API de OpenAI configurada en un archivo `.env`.
+## Configuración del proveedor LLM
 
-Crea un archivo llamado `.env` en la misma carpeta del script:
+El script permite configurar el proveedor LLM mediante variables de entorno. Por defecto puede utilizar OpenAI, pero también puede adaptarse a otros proveedores compatibles con la estructura de API tipo OpenAI.
+
+Crea un archivo `.env` en la raíz del proyecto:
 
 ```env
-OPENAI_API_KEY=tu_api_key_aqui
+LLM_API_KEY=tu_api_key_aqui
+LLM_BASE_URL=https://api.openai.com/v1
+LLM_MODEL=gpt-4o-mini
 ```
-
+puedes usdar esta APy o la que sea de tu agrado, solo debes cambiar esa variable en el script
 Importante: el archivo `.env` no debe subirse al repositorio.
 
 ## Base de conocimiento RAG
